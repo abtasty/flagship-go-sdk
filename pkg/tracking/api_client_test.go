@@ -56,13 +56,13 @@ func TestSendInternalHit(t *testing.T) {
 
 func TestActivate(t *testing.T) {
 	client, _ := NewAPIClient(testEnvID, testAPIKey)
-	err := client.ActivateCampaign(model.ActivationHit{})
+	err := client.SendHit("", &model.ActivationHit{})
 
 	if err == nil {
 		t.Errorf("Expected error for empty request")
 	}
 
-	err = client.ActivateCampaign(model.ActivationHit{
+	err = client.SendHit("vid", &model.ActivationHit{
 		EnvironmentID:    testEnvID,
 		VisitorID:        "test_vid",
 		VariationGroupID: "vgid",
@@ -76,13 +76,13 @@ func TestActivate(t *testing.T) {
 
 func TestSendEvent(t *testing.T) {
 	client, _ := NewAPIClient(realEnvID, testAPIKey)
-	err := client.SendEvent(model.Event{})
+	err := client.SendHit("", &model.Event{})
 
 	if err == nil {
 		t.Errorf("Expected error for empty event request")
 	}
 
-	err = client.SendEvent(model.Event{
+	err = client.SendHit("test_vid", &model.Event{
 		VisitorID: "test_vid",
 		Type:      model.CONTEXT,
 		Data:      model.Context{},

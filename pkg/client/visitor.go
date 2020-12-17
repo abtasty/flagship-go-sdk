@@ -21,7 +21,6 @@ type Visitor struct {
 	Context           map[string]interface{}
 	decisionClient    decision.ClientInterface
 	decisionMode      DecisionMode
-	decisionResponse  *model.APIClientResponse
 	flagInfos         map[string]model.FlagInfos
 	trackingAPIClient tracking.APIClientInterface
 	cacheManager      cache.Manager
@@ -112,7 +111,7 @@ func (v *Visitor) SynchronizeModifications() (err error) {
 	if v.trackingAPIClient != nil && v.decisionMode != API {
 		go func() {
 			visitorLogger.Info("Sending context info to event collect in the background")
-			err := v.trackingAPIClient.SendEvent(model.Event{
+			err := v.trackingAPIClient.SendHit(v.ID, &model.Event{
 				VisitorID: v.ID,
 				Type:      model.CONTEXT,
 				Data:      v.Context,
@@ -124,8 +123,6 @@ func (v *Visitor) SynchronizeModifications() (err error) {
 			}
 		}()
 	}
-
-	v.decisionResponse = resp
 
 	v.flagInfos = map[string]model.FlagInfos{}
 
@@ -165,7 +162,7 @@ func (v *Visitor) getModification(key string, activate bool) (flagValue interfac
 
 	if activate {
 		visitorLogger.Info(fmt.Sprintf("Activating campaign for flag %s for visitor with id : %s", key, v.ID))
-		err := v.trackingAPIClient.ActivateCampaign(model.ActivationHit{
+		err := v.trackingAPIClient.SendHit(v.ID, &model.ActivationHit{
 			VariationGroupID: flagInfos.Campaign.VariationGroupID,
 			VariationID:      flagInfos.Campaign.Variation.ID,
 			VisitorID:        v.ID,
@@ -391,7 +388,7 @@ func (v *Visitor) ActivateCacheModification(key string) (err error) {
 			for _, k := range c.FlagKeys {
 				if k == key {
 					// Key found in cache. Activating it now
-					err = v.trackingAPIClient.ActivateCampaign(model.ActivationHit{
+					err = v.trackingAPIClient.SendHit(v.ID, &model.ActivationHit{
 						VariationGroupID: c.VariationGroupID,
 						VariationID:      c.VariationID,
 						VisitorID:        v.ID,

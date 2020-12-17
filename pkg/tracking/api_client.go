@@ -75,25 +75,22 @@ func (r *APIClient) SendHit(visitorID string, hit model.HitInterface) error {
 	}
 
 	apiLogger.Info(fmt.Sprintf("Sending hit : %v", string(b)))
-	resp, err := r.httpClientTracking.Call("", "POST", b, nil)
 
-	if err != nil {
-		return err
-	}
+	switch specificHit := hit.(type) {
+	case *model.ActivationHit:
+		return r.decisionAPIClient.ActivateCampaign(*specificHit)
+	case *model.Event:
+		return r.decisionAPIClient.SendEvent(*specificHit)
+	default:
+		resp, err := r.httpClientTracking.Call("", "POST", b, nil)
+		if err != nil {
+			return err
+		}
 
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("Error when calling activation API : %v", err)
+		if resp.StatusCode != 200 {
+			return fmt.Errorf("Error when calling activation API : %v", err)
+		}
 	}
 
 	return nil
-}
-
-// ActivateCampaign activate a campaign / variation id to the Decision API
-func (r *APIClient) ActivateCampaign(request model.ActivationHit) error {
-	return r.decisionAPIClient.ActivateCampaign(request)
-}
-
-// SendEvent sends an event to the Flagship event collection
-func (r *APIClient) SendEvent(request model.Event) error {
-	return r.decisionAPIClient.SendEvent(request)
 }
