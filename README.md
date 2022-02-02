@@ -13,6 +13,10 @@
 [![license](https://badgen.now.sh/badge/license/Apache)](./LICENSE)
 
 **Visit [https://developers.flagship.io/](https://developers.flagship.io/) to get started with Flagship.**
+ 
+# DEPRECATED ⛔️
+This SDK is deprecated. 
+Please use [https://github.com/flagship-io/flagship-go-sdk](https://github.com/flagship-io/flagship-go-sdk) instead.
 
 ## Docs
 
